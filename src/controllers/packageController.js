@@ -1,0 +1,113 @@
+const Package = require('../models/Package');
+const PackageCategory = require('../models/PackageCategory');
+// Create new package
+exports.createPackage = async (req, res) => {
+  try {
+    const pkg = await Package.create(req.body);
+    res.status(201).json(pkg);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
+// Get all packages
+exports.getPackages = async (req, res) => {
+  try {
+    const pkgs = await Package.find();
+    res.json(pkgs);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Get one package by ID
+exports.getPackageById = async (req, res) => {
+  try {
+    const pkg = await Package.findById(req.params.id);
+    if (!pkg) return res.status(404).json({ error: 'Not found' });
+    res.json(pkg);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+exports.updatePackage = async (req, res) => {
+  try {
+    const pkg = await Package.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+    if (!pkg) return res.status(404).json({ error: 'Not found' });
+    res.json(pkg);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+// Delete a package by ID
+exports.deletePackage = async (req, res) => {
+  try {
+    const pkg = await Package.findByIdAndDelete(req.params.id);
+    if (!pkg) return res.status(404).json({ error: 'Not found' });
+    res.json({ success: true, message: "Package deleted successfully." });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+exports.getBestSellingCommunityTrips = async (req, res) => {
+  try {
+    const category = await PackageCategory.findOne({ name: "Best-Selling Community Trips" });
+    if (!category) {
+      return res.status(404).json({ error: "Category not found" });
+    }
+    const packages = await Package.find({ category: category._id, status: "Active" })
+      .populate("category")
+      .sort({ createdAt: -1 });
+    res.json(packages);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+exports.getSummerDeals = async (req, res) => {
+  try {
+    const category = await PackageCategory.findOne({ name: "Exclusive Europe Summer Deals 2025" });
+    if (!category) {
+      return res.status(404).json({ error: "Category not found" });
+    }
+    const packages = await Package.find({ category: category._id, status: "Active" })
+      .populate("category")
+      .sort({ createdAt: -1 });
+    res.json(packages);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getAfforadablePackage = async (req, res) => {
+  try {
+    const category = await PackageCategory.findOne({ name: "Affordable Europe Packages" });
+    if (!category) {
+      return res.status(404).json({ error: "Category not found" });
+    }
+    const packages = await Package.find({ category: category._id, status: "Active" })
+      .populate("category")
+      .sort({ createdAt: -1 });
+    res.json(packages);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getEuropeWithUk = async (req, res) => {
+  try {
+    const category = await PackageCategory.findOne({ name: "Europe with UK" });
+    if (!category) {
+      return res.status(404).json({ error: "Category not found" });
+    }
+    const packages = await Package.find({ category: category._id, status: "Active" })
+      .populate("category")
+      .sort({ createdAt: -1 });
+    res.json(packages);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
