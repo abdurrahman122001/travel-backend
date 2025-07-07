@@ -8,8 +8,8 @@ const app = express();
 
 app.use(cors({
   origin: [
-    "https://jade-travel-control-hub.vercel.app",
-    "http://localhost:8081"
+    "http://admins.innand.com",
+    "http://app.innand.com"
   ],
   credentials: true, // remove if you do not need cookies
 }));
