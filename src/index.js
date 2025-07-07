@@ -8,7 +8,7 @@ const app = express();
 
 app.use(cors({
   origin: [
-    "http://localhost:8080",
+    "https://jade-travel-control-hub.vercel.app",
     "http://localhost:8081"
   ],
   credentials: true, // remove if you do not need cookies
