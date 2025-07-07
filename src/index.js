@@ -10,16 +10,14 @@ app.use(cors({
   origin: [
     "http://localhost:8080",
     "http://localhost:8081"
-  ],  credentials: true, // remove if you do not need cookies
+  ],
+  credentials: true, // remove if you do not need cookies
 }));
 app.use(express.json({ limit: '10mb' }));
 
 // === MongoDB connection ===
 mongoose
-  .connect(process.env.MONGODB_URI, {
-    useNewUrlParser:    true,
-    useUnifiedTopology: true,
-  })
+  .connect(process.env.MONGODB_URI)
   .then(() => {
     console.log("▶ MongoDB connected");
   })
@@ -51,7 +49,7 @@ app.get("/", (req, res) => {
 });
 
 // === Start the server ===
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`▶ Server listening on port ${PORT}`);
 });
