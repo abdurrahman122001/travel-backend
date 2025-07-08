@@ -111,3 +111,11 @@ exports.getRomanticEscapesTrips = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+exports.countAllTrips = async (req, res) => {
+  try {
+    const count = await Trip.countDocuments();
+    res.json({ count });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

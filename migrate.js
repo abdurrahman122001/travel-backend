@@ -2,8 +2,9 @@ require("dotenv").config(); // to read .env
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const User = require("./src/models/Users"); // Adjust the path as necessary
+const Blog = require("./src/models/Blog");  // <<-- Add this line
 
-const seedUser = async () => {
+const seedUserAndMigrateBlogIndexes = async () => {
   const plainPassword = "admin123"; // 👈 your actual password
   console.log("Actual Password:", plainPassword);
 
@@ -14,6 +15,11 @@ const seedUser = async () => {
     });
     console.log("▶ MongoDB connected");
 
+    // 1. Migrate Blog indexes
+    await Blog.syncIndexes();
+    console.log("✅ Blog indexes migrated (ensured).");
+
+    // 2. Seed admin user if not present
     const existingUser = await User.findOne({ email: "admin@example.com" });
     if (existingUser) {
       console.log("Admin user already exists.");
@@ -39,4 +45,4 @@ const seedUser = async () => {
   }
 };
 
-seedUser();
+seedUserAndMigrateBlogIndexes();

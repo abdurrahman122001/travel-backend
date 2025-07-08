@@ -4,6 +4,8 @@ const router = express.Router();
 const tripController = require("../controllers/tripController");
 
 router.post("/", tripController.createTrip);
+router.get("/count", tripController.countAllTrips); // Count all trips
+
 router.get("/international", tripController.getInternationalTrips);
 router.get("/explore-india", tripController.getExploreIndiaTrips);
 router.get("/romantic-escapes", tripController.getRomanticEscapesTrips);
@@ -12,5 +14,4 @@ router.get("/", tripController.getAllTrips);
 router.get("/:id", tripController.getTripById);
 router.put("/:id", tripController.updateTrip);
 router.delete("/:id", tripController.deleteTrip);
-
 module.exports = router;

@@ -1,18 +1,13 @@
 const express = require('express');
 const router = express.Router();
+
 const blogController = require('../controllers/blogController');
-
-// Create blog post
+router.get('/count', blogController.countAllBlogs);
+router.get('/', blogController.getAllBlogs); // All blogs
+router.get('/slug/:slug', blogController.getBlogBySlug); // <-- SLUG ROUTE before :id
+router.get('/:id', blogController.getBlogById);          // <-- ID ROUTE (optional, admin)
 router.post('/', blogController.createBlog);
-
-// Get all blogs
-router.get('/', blogController.getAllBlogs);
-
-// Get single blog post
-router.get('/:id', blogController.getBlogById);
 router.put('/:id', blogController.updateBlog);
-
-// Delete blog post (optional)
 router.delete('/:id', blogController.deleteBlog);
 
 module.exports = router;

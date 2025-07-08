@@ -37,6 +37,7 @@
     "pdf-parse": "^1.1.1",
     "pdfkit": "^0.17.1",
     "sharp": "^0.34.2",
+    "slugify": "^1.6.6",
     "socket.io": "^4.8.1",
     "tesseract.js": "^6.0.1",
     "uuid": "^11.1.0"
