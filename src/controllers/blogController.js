@@ -165,3 +165,17 @@ exports.countAllBlogs = async (req, res) => {
     res.status(500).json({ error: 'Failed to count blogs', details: error.message });
   }
 };
+exports.getBlogsByCategory = async (req, res) => {
+  try {
+    const { category } = req.params;
+    const blogs = await Blog.find({
+      category,
+      status: "Published",
+    })
+      .sort({ createdAt: -1 })
+      .limit(10);
+    res.json(blogs);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch blogs by category" });
+  }
+};

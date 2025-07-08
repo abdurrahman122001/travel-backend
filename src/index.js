@@ -8,7 +8,7 @@ const app = express();
 
 app.use(cors({
   origin: [
-    "http://localhost:8080",
+    "http://localhost:8082",
     "http://localhost:8081"
   ],  credentials: true, // remove if you do not need cookies
 }));
@@ -35,23 +35,27 @@ const tripCategoryRoutes = require("./routes/tripCategoryRoutes");
 const contactMessageRoutes = require('./routes/contactMessages');
 const authRoutes = require("./routes/authRoutes");
 const bookingRoutes = require('./routes/bookingRoutes');
+const commentRoutes = require('./routes/commentRoutes');
+const visitorRoutes = require('./routes/visitorRoutes');
 
 app.use('/api/categories', categoryRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/packages', packageRoutes);
 app.use('/api/package-categories', packageCategoryRoutes);
 app.use("/api/trips", tripRoutes);
+app.use("/api/comments", commentRoutes);
 app.use("/api/trip-categories", tripCategoryRoutes);
 app.use("/api/contact-messages", contactMessageRoutes);
 app.use("/api/auth", authRoutes);
 app.use('/api', bookingRoutes);
+app.use('/api/visitors', visitorRoutes);
 
 app.get("/", (req, res) => {
   res.send("Express server is up & MongoDB is connected!");
 });
 
 // === Start the server ===
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`▶ Server listening on port ${PORT}`);
 });
