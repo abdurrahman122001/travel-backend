@@ -1,11 +1,12 @@
 const mongoose = require('mongoose');
-const slugify = require('slugify'); // npm install slugify
+const slugify = require('slugify');
 
 const PackageSchema = new mongoose.Schema({
   title: { type: String, required: true },
   slug: { type: String, required: true, unique: true, index: true },
   subtitle: { type: String },
   category: { type: mongoose.Schema.Types.ObjectId, ref: 'PackageCategory', required: true },
+  subcategories: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PackageSubcategory' }],
   locations: [{ type: String }],
   price: {
     original: { type: Number, required: true },
@@ -29,11 +30,10 @@ const PackageSchema = new mongoose.Schema({
   status: { type: String, enum: ["Active", "Draft"], default: "Draft" }
 });
 
-// Auto-generate slug from title if not set or changed
+// Auto-generate unique slug from title
 PackageSchema.pre('validate', async function (next) {
   if (!this.slug && this.title) {
     let newSlug = slugify(this.title, { lower: true, strict: true });
-    // Ensure uniqueness (append -1, -2, etc if needed)
     let pkg = await mongoose.models.Package.findOne({ slug: newSlug });
     let suffix = 1;
     let baseSlug = newSlug;

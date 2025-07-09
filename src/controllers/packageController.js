@@ -5,10 +5,10 @@ const slugify = require('slugify');
 // Create new package
 exports.createPackage = async (req, res) => {
   try {
-    // Optional: allow user to send slug, or auto-generate in model
     if (!req.body.slug && req.body.title) {
       req.body.slug = slugify(req.body.title, { lower: true, strict: true });
     }
+    // Accept subcategory from body (category must still be required!)
     const pkg = await Package.create(req.body);
     res.status(201).json(pkg);
   } catch (err) {
@@ -19,38 +19,43 @@ exports.createPackage = async (req, res) => {
 // Get all packages
 exports.getPackages = async (req, res) => {
   try {
-    const pkgs = await Package.find().populate('category');
+    const pkgs = await Package.find()
+      .populate('category')
+      .populate('subcategories'); // <-- ADD THIS
     res.json(pkgs);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
-
 // Get one package by ID
 exports.getPackageById = async (req, res) => {
   try {
-    const pkg = await Package.findById(req.params.id).populate('category');
+    const pkg = await Package.findById(req.params.id)
+      .populate('category')
+      .populate('subcategories'); // <-- ADD THIS
     if (!pkg) return res.status(404).json({ error: 'Not found' });
     res.json(pkg);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 // Get package by slug
 exports.getPackageBySlug = async (req, res) => {
   try {
-    const pkg = await Package.findOne({ slug: req.params.slug }).populate('category');
+    const pkg = await Package.findOne({ slug: req.params.slug })
+      .populate('category')
+      .populate('subcategories'); // <-- ADD THIS
     if (!pkg) return res.status(404).json({ error: 'Not found' });
     res.json(pkg);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
-
+// Update package
 exports.updatePackage = async (req, res) => {
   try {
-    // If title changed, update slug
     if (req.body.title && !req.body.slug) {
       req.body.slug = slugify(req.body.title, { lower: true, strict: true });
     }

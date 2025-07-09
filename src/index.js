@@ -8,8 +8,8 @@ const app = express();
 
 app.use(cors({
   origin: [
-    "http://admins.innand.com",
-    "http://app.innand.com"
+    "http://localhost:8080",
+    "http://localhost:8081"
   ],  credentials: true, // remove if you do not need cookies
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -37,6 +37,7 @@ const authRoutes = require("./routes/authRoutes");
 const bookingRoutes = require('./routes/bookingRoutes');
 const commentRoutes = require('./routes/commentRoutes');
 const visitorRoutes = require('./routes/visitorRoutes');
+const packageSubcategoryRoutes = require('./routes/packageSubcategories');
 
 app.use('/api/categories', categoryRoutes);
 app.use('/api/blogs', blogRoutes);
@@ -49,6 +50,7 @@ app.use("/api/contact-messages", contactMessageRoutes);
 app.use("/api/auth", authRoutes);
 app.use('/api', bookingRoutes);
 app.use('/api/visitors', visitorRoutes);
+app.use('/api/package-subcategories', packageSubcategoryRoutes);
 
 app.get("/", (req, res) => {
   res.send("Express server is up & MongoDB is connected!");

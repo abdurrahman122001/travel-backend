@@ -29,3 +29,13 @@ exports.updateCategory = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
+exports.deleteCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = await PackageCategory.findByIdAndDelete(id);
+    if (!deleted) return res.status(404).json({ error: "Category not found" });
+    res.json({ success: true, id });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
