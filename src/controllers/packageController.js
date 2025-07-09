@@ -20,7 +20,7 @@ exports.createPackage = async (req, res) => {
 exports.getPackages = async (req, res) => {
   try {
     const pkgs = await Package.find()
-      .populate('category')
+      .populate('categories')
       .populate('subcategories'); // <-- ADD THIS
     res.json(pkgs);
   } catch (err) {
@@ -31,8 +31,8 @@ exports.getPackages = async (req, res) => {
 exports.getPackageById = async (req, res) => {
   try {
     const pkg = await Package.findById(req.params.id)
-      .populate('category')
-      .populate('subcategories'); // <-- ADD THIS
+      .populate('categories')
+      .populate('subcategories');
     if (!pkg) return res.status(404).json({ error: 'Not found' });
     res.json(pkg);
   } catch (err) {
@@ -45,7 +45,7 @@ exports.getPackageById = async (req, res) => {
 exports.getPackageBySlug = async (req, res) => {
   try {
     const pkg = await Package.findOne({ slug: req.params.slug })
-      .populate('category')
+      .populate('categories')
       .populate('subcategories'); // <-- ADD THIS
     if (!pkg) return res.status(404).json({ error: 'Not found' });
     res.json(pkg);
@@ -83,12 +83,12 @@ exports.deletePackage = async (req, res) => {
 
 exports.getBestSellingCommunityTrips = async (req, res) => {
   try {
-    const category = await PackageCategory.findOne({ name: "Best-Selling Community Trips" });
+    const category = await PackageCategory.findOne({ name: "International Trips" });
     if (!category) {
       return res.status(404).json({ error: "Category not found" });
     }
-    const packages = await Package.find({ category: category._id, status: "Active" })
-      .populate("category")
+    const packages = await Package.find({ categories: category._id, status: "Active" })
+      .populate("categories")
       .sort({ createdAt: -1 });
     res.json(packages);
   } catch (err) {
@@ -97,12 +97,12 @@ exports.getBestSellingCommunityTrips = async (req, res) => {
 };
 exports.getSummerDeals = async (req, res) => {
   try {
-    const category = await PackageCategory.findOne({ name: "Exclusive Europe Summer Deals 2025" });
+    const category = await PackageCategory.findOne({ name: "Indian Trips" });
     if (!category) {
       return res.status(404).json({ error: "Category not found" });
     }
-    const packages = await Package.find({ category: category._id, status: "Active" })
-      .populate("category")
+    const packages = await Package.find({ categories: category._id, status: "Active" })
+      .populate("categories")
       .sort({ createdAt: -1 });
     res.json(packages);
   } catch (err) {
@@ -112,12 +112,12 @@ exports.getSummerDeals = async (req, res) => {
 
 exports.getAfforadablePackage = async (req, res) => {
   try {
-    const category = await PackageCategory.findOne({ name: "Affordable Europe Packages" });
+    const category = await PackageCategory.findOne({ name: "School Trips" });
     if (!category) {
       return res.status(404).json({ error: "Category not found" });
     }
-    const packages = await Package.find({ category: category._id, status: "Active" })
-      .populate("category")
+    const packages = await Package.find({ categories: category._id, status: "Active" })
+      .populate("categories")
       .sort({ createdAt: -1 });
     res.json(packages);
   } catch (err) {
@@ -127,12 +127,12 @@ exports.getAfforadablePackage = async (req, res) => {
 
 exports.getEuropeWithUk = async (req, res) => {
   try {
-    const category = await PackageCategory.findOne({ name: "Europe with UK" });
+    const category = await PackageCategory.findOne({ name: "Inschool Camps" });
     if (!category) {
       return res.status(404).json({ error: "Category not found" });
     }
-    const packages = await Package.find({ category: category._id, status: "Active" })
-      .populate("category")
+    const packages = await Package.find({ categories: category._id, status: "Active" })
+      .populate("categories")
       .sort({ createdAt: -1 });
     res.json(packages);
   } catch (err) {
@@ -146,6 +146,22 @@ exports.countAllPackages = async (req, res) => {
     res.json({ count });
   } catch (err) {
     console.error("Count error:", err);   // log the error!
+    res.status(500).json({ error: err.message });
+  }
+};
+exports.getPackagesByCategory = async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+
+    // Make sure categoryId is valid
+    if (!categoryId) return res.status(400).json({ error: "Category ID is required" });
+
+    // Find packages where categories array includes this categoryId
+    const packages = await Package.find({ categories: categoryId })
+      .populate('categories')
+      .populate('subcategories');
+    res.json(packages);
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };

@@ -5,7 +5,7 @@ const PackageSchema = new mongoose.Schema({
   title: { type: String, required: true },
   slug: { type: String, required: true, unique: true, index: true },
   subtitle: { type: String },
-  category: { type: mongoose.Schema.Types.ObjectId, ref: 'PackageCategory', required: true },
+categories: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PackageCategory', required: true }],
   subcategories: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PackageSubcategory' }],
   locations: [{ type: String }],
   price: {

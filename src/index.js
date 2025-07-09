@@ -8,7 +8,7 @@ const app = express();
 
 app.use(cors({
   origin: [
-    "http://localhost:8080",
+    "http://localhost:8082",
     "http://localhost:8081"
   ],  credentials: true, // remove if you do not need cookies
 }));

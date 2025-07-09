@@ -15,5 +15,5 @@ router.get("/europe-with-uk", packageController.getEuropeWithUk);
 router.get('/:id', packageController.getPackageById);
 router.put('/:id', packageController.updatePackage);
 router.delete('/:id', packageController.deletePackage);
-
+router.get('/by-category/:categoryId', packageController.getPackagesByCategory);
 module.exports = router;
