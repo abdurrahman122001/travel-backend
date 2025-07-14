@@ -165,3 +165,16 @@ exports.getPackagesByCategory = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+exports.getLatestPackages = async (req, res) => {
+  try {
+    const latestPackages = await Package.find()
+      .sort({ createdAt: -1 })
+      .populate('categories')
+      .populate('subcategories');
+    res.json(latestPackages);
+  } catch (err) {
+    console.error("Error in getLatestPackages:", err); // <---- Add this
+    res.status(500).json({ error: err.message });
+  }
+};

@@ -6,6 +6,7 @@ const packageController = require('../controllers/packageController');
 router.get('/slug/:slug', packageController.getPackageBySlug);
 
 router.post('/', packageController.createPackage);
+router.get('/packages/latest', packageController.getLatestPackages);
 router.get('/', packageController.getPackages);
 router.get('/count', packageController.countAllPackages); // Count all packages
 router.get("/best-selling-community-trips", packageController.getBestSellingCommunityTrips);
