@@ -8,8 +8,8 @@ const app = express();
 
 app.use(cors({
   origin: [
-    "http://localhost:8080",
-    "http://localhost:8081"
+    "https://admins.innand.com",
+    "http://app.innand.com"
   ],  credentials: true, // remove if you do not need cookies
 }));
 app.use(express.json({ limit: '10mb' }));
