@@ -9,7 +9,7 @@ const app = express();
 app.use(cors({
   origin: [
     "http://app.twgi.in",
-    "http:admin.twgi.in"
+    "http://admin.twgi.in"
   ],  credentials: true, // remove if you do not need cookies
 }));
 app.use(express.json({ limit: '10mb' }));
