@@ -3,9 +3,10 @@ require("dotenv").config();
 const express  = require("express");
 const mongoose = require("mongoose");
 const cors = require('cors'); // <--- ADDED
-
+const fs = require('fs');
+const path = require('path');
 const app = express();
-
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')))
 app.use(cors({
   origin: [
     "http://localhost:8080",

@@ -9,8 +9,8 @@ categories: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PackageCategory', req
   subcategories: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PackageSubcategory' }],
   locations: [{ type: String }],
   price: {
-    original: { type: Number, required: true },
-    current: { type: Number, required: true },
+    original: { type: Number },
+    current: { type: Number },
     label: { type: String, default: "onwards" }
   },
   isRecommended: { type: Boolean, default: false },

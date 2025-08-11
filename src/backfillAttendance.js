@@ -1,8 +1,8 @@
 // backend/src/utils/backfillAttendance.js
 const Employee   = require('./models/Employees');
 const Attendance = require('./models/Attendance');
-
-/**
+const fs = require('fs');
+const path = require('path');/**
  * Inserts a “Pending” attendance row for every employee
  * who doesn’t already have one on the given date.
  * Idempotent: if nothing is missing, it won’t insert duplicates.

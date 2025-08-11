@@ -1,16 +1,45 @@
 const Package = require('../models/Package');
 const PackageCategory = require('../models/PackageCategory');
 const slugify = require('slugify');
-
-// Create new package
 exports.createPackage = async (req, res) => {
   try {
     if (!req.body.slug && req.body.title) {
       req.body.slug = slugify(req.body.title, { lower: true, strict: true });
     }
-    // Accept subcategory from body (category must still be required!)
+
+    // Handle empty price fields
+    if (req.body.price) {
+      req.body.price.original = req.body.price.original ? Number(req.body.price.original) : undefined;
+      req.body.price.current = req.body.price.current ? Number(req.body.price.current) : undefined;
+    }
+
     const pkg = await Package.create(req.body);
     res.status(201).json(pkg);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
+// Update package
+exports.updatePackage = async (req, res) => {
+  try {
+    if (req.body.title && !req.body.slug) {
+      req.body.slug = slugify(req.body.title, { lower: true, strict: true });
+    }
+
+    // Handle empty price fields
+    if (req.body.price) {
+      req.body.price.original = req.body.price.original ? Number(req.body.price.original) : undefined;
+      req.body.price.current = req.body.price.current ? Number(req.body.price.current) : undefined;
+    }
+
+    const pkg = await Package.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+    if (!pkg) return res.status(404).json({ error: 'Not found' });
+    res.json(pkg);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -51,23 +80,6 @@ exports.getPackageBySlug = async (req, res) => {
     res.json(pkg);
   } catch (err) {
     res.status(500).json({ error: err.message });
-  }
-};
-// Update package
-exports.updatePackage = async (req, res) => {
-  try {
-    if (req.body.title && !req.body.slug) {
-      req.body.slug = slugify(req.body.title, { lower: true, strict: true });
-    }
-    const pkg = await Package.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    );
-    if (!pkg) return res.status(404).json({ error: 'Not found' });
-    res.json(pkg);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
   }
 };
 // Delete a package by ID
