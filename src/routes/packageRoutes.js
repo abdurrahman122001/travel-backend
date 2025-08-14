@@ -13,6 +13,7 @@ router.get("/best-selling-community-trips", packageController.getBestSellingComm
 router.get("/summer-deals", packageController.getSummerDeals);
 router.get("/affordable-packages", packageController.getAfforadablePackage);
 router.get("/europe-with-uk", packageController.getEuropeWithUk);
+router.get('/search', packageController.searchPackages);
 router.get('/:id', packageController.getPackageById);
 router.put('/:id', packageController.updatePackage);
 router.delete('/:id', packageController.deletePackage);

@@ -1,6 +1,8 @@
 const Package = require('../models/Package');
 const PackageCategory = require('../models/PackageCategory');
 const slugify = require('slugify');
+const mongoose = require('mongoose');
+
 exports.createPackage = async (req, res) => {
   try {
     if (!req.body.slug && req.body.title) {
@@ -59,11 +61,17 @@ exports.getPackages = async (req, res) => {
 // Get one package by ID
 exports.getPackageById = async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid package ID' });
+    }
+
     const pkg = await Package.findById(req.params.id)
       .populate('categories')
       .populate('subcategories');
+
     if (!pkg) return res.status(404).json({ error: 'Not found' });
     res.json(pkg);
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -187,6 +195,47 @@ exports.getLatestPackages = async (req, res) => {
     res.json(latestPackages);
   } catch (err) {
     console.error("Error in getLatestPackages:", err); // <---- Add this
+    res.status(500).json({ error: err.message });
+  }
+};
+// Search packages by title (full or partial)
+exports.searchPackages = async (req, res) => {
+  try {
+    const query = (req.query.query || "").trim();
+    if (!query) {
+      return res.status(400).json({ error: "Search query is required" });
+    }
+
+    // Clean punctuation & split into words
+    const cleanQuery = query.replace(/[^\w\s]/g, "").trim();
+    const words = cleanQuery.split(/\s+/).filter(Boolean);
+
+    // Phrase regex
+    const phraseRegex = new RegExp(cleanQuery, "i");
+
+    // Each word regex
+    const wordRegexConditions = words.map(word => ({
+      $or: [
+        { title: { $regex: word, $options: "i" } },
+        { description: { $regex: word, $options: "i" } },
+        { destination: { $regex: word, $options: "i" } }
+      ]
+    }));
+
+    const packages = await Package.find({
+      status: "Active",
+      $or: [
+        { title: phraseRegex },
+        { description: phraseRegex },
+        { destination: phraseRegex },
+        { $and: wordRegexConditions }
+      ]
+    })
+      .populate("categories")
+      .populate("subcategories");
+
+    res.json({ total: packages.length, packages });
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };

@@ -60,7 +60,8 @@ const commentRoutes            = require('./routes/commentRoutes');
 const visitorRoutes            = require('./routes/visitorRoutes');
 const packageSubcategoryRoutes = require('./routes/packageSubcategories');
 const headerSettingsRoutes     = require('./routes/headerSettingsRoutes');
-
+const searchRoutes = require('./routes/search');
+app.use('/api/search', searchRoutes);
 app.use('/api/categories',           categoryRoutes);
 app.use('/api/blogs',                blogRoutes);
 app.use('/api/packages',             packageRoutes);
