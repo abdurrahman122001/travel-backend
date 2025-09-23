@@ -3,6 +3,9 @@ require("dotenv").config();
 const express  = require("express");
 const mongoose = require("mongoose");
 const cors     = require("cors");
+const fs       = require("fs");
+const http     = require("http");
+const https    = require("https");
 const path     = require("path");
 
 const app = express();
@@ -10,21 +13,27 @@ const app = express();
 /* ---------- Static files ---------- */
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
-/* ---------- CORS (allow localhost) ---------- */
+/* ---------- CORS (allow your domains over HTTPS) ---------- */
 const ALLOWED_ORIGINS = [
-  "http://localhost:3000", // React default
-  "http://localhost:5173", // Vite default
-  "http://localhost:8080", // Vue/other
+  "http://localhost:8080",
   "http://localhost:8081",
+  "https://finwinn.com",
+  "https://www.finwinn.com",
+  // keep these if you still need them:
+  "https://app.twgi.in",
+  "http://app.twgi.in",
+  "https://admin.twgi.in",
+  "http://admin.twgi.in",
 ];
 
 app.use(cors({
   origin(origin, cb) {
-    if (!origin) return cb(null, true); // allow curl/postman
+    // allow tools/curl/no-origin requests
+    if (!origin) return cb(null, true);
     if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
     return cb(new Error(`CORS blocked for origin: ${origin}`));
   },
-  credentials: true,
+  credentials: true, // keep if you use cookies/auth headers
 }));
 
 app.use(express.json({ limit: '10mb' }));
@@ -51,8 +60,7 @@ const commentRoutes            = require('./routes/commentRoutes');
 const visitorRoutes            = require('./routes/visitorRoutes');
 const packageSubcategoryRoutes = require('./routes/packageSubcategories');
 const headerSettingsRoutes     = require('./routes/headerSettingsRoutes');
-const searchRoutes             = require('./routes/search');
-
+const searchRoutes = require('./routes/search');
 app.use('/api/search', searchRoutes);
 app.use('/api/categories',           categoryRoutes);
 app.use('/api/blogs',                blogRoutes);
@@ -74,9 +82,32 @@ app.get("/", (req, res) => {
   res.send("Express server is up & MongoDB is connected!");
 });
 
-/* ---------- Localhost server ---------- */
-const PORT = process.env.PORT || 5000;
+/* ---------- HTTPS server (443) + HTTP redirect (80) ---------- */
+/* Use your Let's Encrypt paths (already issued):              */
+/*   /etc/letsencrypt/live/finwinn.com/fullchain.pem           */
+/*   /etc/letsencrypt/live/finwinn.com/privkey.pem             */
+const CERT_PATH   = process.env.CERT_FULLCHAIN || "/etc/letsencrypt/live/finwinn.com/fullchain.pem";
+const KEY_PATH    = process.env.CERT_PRIVKEY  || "/etc/letsencrypt/live/finwinn.com/privkey.pem";
+const HTTPS_PORT  = 443;
+const HTTP_PORT   = 80;
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
+// If you deploy behind a proxy in the future, uncomment:
+// app.set('trust proxy', true);
+
+const httpsOptions = {
+  cert: fs.readFileSync(CERT_PATH),
+  key:  fs.readFileSync(KEY_PATH),
+};
+
+https.createServer(httpsOptions, app).listen(HTTPS_PORT, () => {
+  console.log(`🔐 HTTPS listening on https://finwinn.com (:${HTTPS_PORT})`);
+});
+
+// Redirect all HTTP to HTTPS
+http.createServer((req, res) => {
+  const host = req.headers.host || "finwinn.com";
+  res.writeHead(301, { Location: `https://${host}${req.url}` });
+  res.end();
+}).listen(HTTP_PORT, () => {
+  console.log(`➡️  Redirecting HTTP (:${HTTP_PORT}) → HTTPS (:${HTTPS_PORT})`);
 });
