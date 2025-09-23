@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const PackageCategory = require('../models/PackageCategory');
+const PackageSubcategory = require('../models/PackageSubcategory'); // You missed this import earlier
 const upload = require('../config/multerConfig');
 
 // Middleware to handle single file upload
@@ -11,10 +12,7 @@ exports.createCategory = async (req, res) => {
   try {
     const { name, description } = req.body;
     
-    const categoryData = {
-      name,
-      description
-    };
+    const categoryData = { name, description };
 
     if (req.file) {
       categoryData.imagePath = `/uploads/categories/${req.file.filename}`;
@@ -52,10 +50,7 @@ exports.updateCategory = async (req, res) => {
       return res.status(404).json({ error: "Category not found" });
     }
 
-    const updateData = {
-      name,
-      description
-    };
+    const updateData = { name, description };
 
     // If new image uploaded
     if (req.file) {
@@ -102,14 +97,15 @@ exports.deleteCategory = async (req, res) => {
       }
     }
 
-    await category.remove();
+    // FIX: use deleteOne instead of remove
+    await category.deleteOne();
     res.json({ success: true, id });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
 
-// Get categories with subcategories (unchanged from your original)
+// Get categories with subcategories
 exports.getCategoriesWithSubcategories = async (req, res) => {
   try {
     const categories = await PackageCategory.find().lean();
