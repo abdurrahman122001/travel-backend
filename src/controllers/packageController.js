@@ -5,14 +5,24 @@ const mongoose = require('mongoose');
 
 exports.createPackage = async (req, res) => {
   try {
+    // Auto-generate slug if missing
     if (!req.body.slug && req.body.title) {
       req.body.slug = slugify(req.body.title, { lower: true, strict: true });
     }
 
-    // Handle empty price fields
+    // Ensure overviewTitle exists (otherwise uses schema default)
+    if (req.body.overviewTitle === '') {
+      delete req.body.overviewTitle;
+    }
+
+    // Normalize price numbers
     if (req.body.price) {
-      req.body.price.original = req.body.price.original ? Number(req.body.price.original) : undefined;
-      req.body.price.current = req.body.price.current ? Number(req.body.price.current) : undefined;
+      req.body.price.original = req.body.price.original
+        ? Number(req.body.price.original)
+        : undefined;
+      req.body.price.current = req.body.price.current
+        ? Number(req.body.price.current)
+        : undefined;
     }
 
     const pkg = await Package.create(req.body);
@@ -22,17 +32,27 @@ exports.createPackage = async (req, res) => {
   }
 };
 
-// Update package
+// Update an existing package
 exports.updatePackage = async (req, res) => {
   try {
+    // Auto-generate slug if title changed but slug missing
     if (req.body.title && !req.body.slug) {
       req.body.slug = slugify(req.body.title, { lower: true, strict: true });
     }
 
-    // Handle empty price fields
+    // If user cleared overviewTitle, remove it to let default apply
+    if (req.body.overviewTitle === '') {
+      delete req.body.overviewTitle;
+    }
+
+    // Normalize price numbers
     if (req.body.price) {
-      req.body.price.original = req.body.price.original ? Number(req.body.price.original) : undefined;
-      req.body.price.current = req.body.price.current ? Number(req.body.price.current) : undefined;
+      req.body.price.original = req.body.price.original
+        ? Number(req.body.price.original)
+        : undefined;
+      req.body.price.current = req.body.price.current
+        ? Number(req.body.price.current)
+        : undefined;
     }
 
     const pkg = await Package.findByIdAndUpdate(
@@ -40,24 +60,41 @@ exports.updatePackage = async (req, res) => {
       req.body,
       { new: true, runValidators: true }
     );
-    if (!pkg) return res.status(404).json({ error: 'Not found' });
+
+    if (!pkg) {
+      return res.status(404).json({ error: 'Package not found' });
+    }
     res.json(pkg);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
 
-// Get all packages
 exports.getPackages = async (req, res) => {
   try {
-    const pkgs = await Package.find()
-      .populate('categories')
-      .populate('subcategories'); // <-- ADD THIS
-    res.json(pkgs);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    const pkgs = await Package.find({}, 'title image price status categories')
+      .populate('categories', 'name')
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    const total = await Package.countDocuments();
+
+    res.json({
+      total,
+      page,
+      pages: Math.ceil(total / limit),
+      pkgs
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
 // Get one package by ID
 exports.getPackageById = async (req, res) => {
   try {

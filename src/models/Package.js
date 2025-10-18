@@ -4,8 +4,9 @@ const slugify = require('slugify');
 const PackageSchema = new mongoose.Schema({
   title: { type: String, required: true },
   slug: { type: String, required: true, unique: true, index: true },
+  overviewTitle: { type: String, default: "Overview & Highlights" },
   subtitle: { type: String },
-categories: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PackageCategory', required: true }],
+  categories: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PackageCategory', required: true }],
   subcategories: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PackageSubcategory' }],
   locations: [{ type: String }],
   price: {
