@@ -23,6 +23,7 @@ const PackageSchema = new mongoose.Schema({
   startLocation: { type: String },
   departureDates: [{ type: String }],
   features: [{ type: String }],
+  overview: { type: String },
   itinerary: { type: String },
   inclusions: [{ type: String }],
   exclusions: [{ type: String }],

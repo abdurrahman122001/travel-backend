@@ -53,6 +53,8 @@ const visitorRoutes            = require('./routes/visitorRoutes');
 const packageSubcategoryRoutes = require('./routes/packageSubcategories');
 const headerSettingsRoutes     = require('./routes/headerSettingsRoutes');
 const searchRoutes             = require('./routes/search');
+const aboutRoutes              = require('./routes/about');
+const downloadEmailRoutes      = require('./routes/downloadEmails');
 
 app.use('/api/search', searchRoutes);
 app.use('/api/categories',           categoryRoutes);
@@ -68,7 +70,8 @@ app.use('/api',                      bookingRoutes);
 app.use('/api/visitors',             visitorRoutes);
 app.use('/api/package-subcategories',packageSubcategoryRoutes);
 app.use('/api/header-settings',      headerSettingsRoutes);
-
+app.use('/api/about',               aboutRoutes);
+app.use('/api/download-emails',     downloadEmailRoutes);
 /* ---------- Health & root ---------- */
 app.get("/api/health", (req, res) => res.json({ ok: true }));
 app.get("/", (req, res) => {
