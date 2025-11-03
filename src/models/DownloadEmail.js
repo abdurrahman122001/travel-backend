@@ -1,4 +1,3 @@
-// models/DownloadEmail.js
 import mongoose from 'mongoose';
 
 const downloadEmailSchema = new mongoose.Schema({
@@ -7,6 +6,11 @@ const downloadEmailSchema = new mongoose.Schema({
     required: true,
     trim: true,
     lowercase: true
+  },
+  phone: {
+    type: String,
+    trim: true,
+    default: ''
   },
   packageId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -43,5 +47,6 @@ downloadEmailSchema.index({ email: 1, packageId: 1 }, { unique: true });
 // Index for admin queries
 downloadEmailSchema.index({ createdAt: -1 });
 downloadEmailSchema.index({ packageTitle: 1 });
+downloadEmailSchema.index({ phone: 1 });
 
 export default mongoose.model('DownloadEmail', downloadEmailSchema);

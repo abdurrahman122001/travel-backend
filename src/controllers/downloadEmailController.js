@@ -1,11 +1,10 @@
-// controllers/downloadEmailController.js
 import DownloadEmail from '../models/DownloadEmail.js';
 import Package from '../models/Package.js';
 
-// Track download email
+// Track download email and phone
 export const trackDownload = async (req, res) => {
   try {
-    const { email, packageId, packageTitle, packageSlug } = req.body;
+    const { email, phone, packageId, packageTitle, packageSlug } = req.body;
     
     if (!email || !packageId || !packageTitle || !packageSlug) {
       return res.status(400).json({ 
@@ -23,12 +22,16 @@ export const trackDownload = async (req, res) => {
     const ipAddress = req.ip || req.connection.remoteAddress;
     const userAgent = req.get('User-Agent') || '';
 
+    // Clean phone number if provided
+    const cleanPhone = phone ? phone.replace(/\D/g, '') : '';
+
     // Upsert - increment download count if exists, else create new
     const downloadRecord = await DownloadEmail.findOneAndUpdate(
       { email: email.toLowerCase(), packageId },
       { 
         $inc: { downloadCount: 1 },
-        $setOnInsert: {
+        $set: {
+          ...(cleanPhone && { phone: cleanPhone }), // Update phone if provided
           packageTitle,
           packageSlug,
           userAgent,
@@ -83,6 +86,7 @@ export const getDownloadEmails = async (req, res) => {
     if (search) {
       filter.$or = [
         { email: { $regex: search, $options: 'i' } },
+        { phone: { $regex: search, $options: 'i' } },
         { packageTitle: { $regex: search, $options: 'i' } },
         { packageSlug: { $regex: search, $options: 'i' } }
       ];
@@ -135,6 +139,11 @@ export const getDownloadStats = async (req, res) => {
     const uniqueEmails = await DownloadEmail.distinct('email');
     const totalPackages = await DownloadEmail.distinct('packageId');
     
+    // Users with phone numbers
+    const usersWithPhone = await DownloadEmail.countDocuments({
+      phone: { $ne: '', $exists: true }
+    });
+    
     // Top downloaded packages
     const topPackages = await DownloadEmail.aggregate([
       {
@@ -168,6 +177,7 @@ export const getDownloadStats = async (req, res) => {
       totalDownloads,
       totalUniqueEmails: uniqueEmails.length,
       totalPackages: totalPackages.length,
+      usersWithPhone,
       recentDownloads,
       topPackages
     });
@@ -199,6 +209,58 @@ export const deleteDownloadRecord = async (req, res) => {
     console.error('Error deleting download record:', error);
     res.status(500).json({ 
       message: 'Error deleting download record', 
+      error: error.message 
+    });
+  }
+};
+
+// Export download data as CSV
+export const exportDownloads = async (req, res) => {
+  try {
+    const downloads = await DownloadEmail.find()
+      .populate('packageId', 'title slug')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // CSV headers
+    const headers = [
+      'Email',
+      'Phone',
+      'Package Title',
+      'Package Slug',
+      'Download Count',
+      'First Download',
+      'Last Download',
+      'IP Address'
+    ];
+
+    // CSV rows
+    const rows = downloads.map(download => [
+      download.email,
+      download.phone || 'N/A',
+      download.packageTitle,
+      download.packageSlug,
+      download.downloadCount,
+      new Date(download.createdAt).toLocaleDateString('en-IN'),
+      new Date(download.updatedAt).toLocaleDateString('en-IN'),
+      download.ipAddress || 'N/A'
+    ]);
+
+    // Create CSV content
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(field => `"${field}"`).join(','))
+    ].join('\n');
+
+    // Set response headers for CSV download
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=downloads.csv');
+    res.send(csvContent);
+
+  } catch (error) {
+    console.error('Error exporting downloads:', error);
+    res.status(500).json({ 
+      message: 'Error exporting download data', 
       error: error.message 
     });
   }
