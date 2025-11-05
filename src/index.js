@@ -12,7 +12,7 @@ const path     = require("path");
 const app = express();
 
 /* ---------- Static files ---------- */
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 /* ---------- CORS (allow your domains over HTTPS) ---------- */
 const ALLOWED_ORIGINS = [
