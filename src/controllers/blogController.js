@@ -86,64 +86,63 @@ exports.getBlogBySlug = async (req, res) => {
   }
 };
 
-// UPDATE a blog (no change needed for status filter here, since you update all blogs)
 exports.updateBlog = async (req, res) => {
   try {
     const { id } = req.params;
-    const {
-      title,
-      slug,
-      excerpt,
-      content,
-      category,
-      tags,
-      author,
-      image,
-      status,
-      featured
-    } = req.body;
 
-    const tagsArray = parseTags(tags);
+    // ✅ Only include defined fields in update
+    const updateData = {};
+    const allowedFields = [
+      "title",
+      "slug",
+      "excerpt",
+      "content",
+      "category",
+      "tags",
+      "author",
+      "image",
+      "status",
+      "featured",
+    ];
 
-    // Check category matches enum
-    const allowedCategories = ['Travel Tips', 'Destinations', 'Culture', 'Adventure', 'Food'];
-    if (!allowedCategories.includes(category)) {
-      return res.status(400).json({
-        error: "Invalid category",
-        details: `Category must be one of: ${allowedCategories.join(", ")}`
-      });
+    for (const key of allowedFields) {
+      if (req.body[key] !== undefined) {
+        updateData[key] = req.body[key];
+      }
+    }
+
+    // ✅ Parse tags if provided
+    if (updateData.tags) {
+      updateData.tags = Array.isArray(updateData.tags)
+        ? updateData.tags
+        : updateData.tags.split(",").map(tag => tag.trim()).filter(Boolean);
+    }
+
+    // ✅ Update publish date if needed
+    if (updateData.status === "Published") {
+      updateData.publishedAt = new Date();
     }
 
     const updatedBlog = await Blog.findByIdAndUpdate(
       id,
-      {
-        title,
-        slug,
-        excerpt,
-        content,
-        category,
-        tags: tagsArray,
-        author,
-        image,
-        status,
-        featured: featured || false,
-        publishedAt: status === "Published" ? new Date() : null,
-      },
+      { $set: updateData }, // only update sent fields
       { new: true, runValidators: true }
     );
 
-    if (!updatedBlog)
-      return res.status(404).json({ error: 'Blog not found' });
+    if (!updatedBlog) {
+      return res.status(404).json({ error: "Blog not found" });
+    }
 
-    res.json({ message: 'Blog updated', blog: updatedBlog });
+    res.json({ message: "Blog updated successfully", blog: updatedBlog });
   } catch (error) {
     let msg = error.message;
-    if (error.code === 11000 && error.keyPattern && error.keyPattern.slug) {
+    if (error.code === 11000 && error.keyPattern?.slug) {
       msg = "Slug must be unique. Please choose a different slug.";
     }
-    res.status(500).json({ error: 'Failed to update blog', details: msg });
+    res.status(500).json({ error: "Failed to update blog", details: msg });
   }
 };
+
 
 // DELETE a blog (no change needed)
 exports.deleteBlog = async (req, res) => {
@@ -177,5 +176,22 @@ exports.getBlogsByCategory = async (req, res) => {
     res.json(blogs);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch blogs by category" });
+  }
+};
+
+// ✅ Get all unique categories
+exports.getAllCategories = async (req, res) => {
+  try {
+    const categories = await Blog.distinct("category");
+    const formatted = categories.map((cat) => ({
+      name: cat,
+      slug: cat.toLowerCase().replace(/\s+/g, "-"),
+    }));
+    res.json(formatted);
+  } catch (error) {
+    res.status(500).json({
+      error: "Failed to fetch categories",
+      details: error.message,
+    });
   }
 };
